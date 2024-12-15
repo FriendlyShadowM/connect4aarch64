@@ -3,25 +3,20 @@
 
 .data
 arr: .fill 42, 4, 0
-playerState: .word 1
+playerState: .word 2
 
 .text
 main:
-    ldr x0, =arr
-    bl printArray
-    
-    bl player1
-    b input
     
 showboard:
     ldr x0, =arr
     bl printArray
+    b checkPlayer
     
 input:
     bl inputCol
     ldr x19, =arr
     mov x8, #1             //resets horizontal counter to 1 to count player's current token
-    printReg 8
     
 checkValid:
     mov x1, x0    //x1 = index
@@ -54,7 +49,6 @@ winCheck:
     mov x7, #0            //vertical counter
     mov x9, #0            //left diag counter
     mov x10, #0           //right diag counter
-    printReg 8
     b vertCheck           //check vertical first
     
 checkPlayer:
@@ -66,13 +60,13 @@ checkPlayer:
     add x3, x3, #-1
     str x3, [x4]
     bl player1
-    b showboard
+    b input
     
 swapPlayer:
     add x3, x3, #1
     str x3, [x4]
     bl player2
-    b showboard
+    b input
 
 vertCheck:
     mov x20, x5            //store position
@@ -90,7 +84,7 @@ scanColumn:
     
     add x8, x8, #1         //increment counter
     cmp x8, #4             //check for win
-    b.eq exit             //if 4 in row exit
+    b.eq win             //if 4 in row exit
     b nextVertPos         //check next position
     
 resetVertCount:
@@ -129,7 +123,7 @@ scanDiagRight:
     
     add x8, x8, #1         //increment counter
     cmp x8, #4             //check for win
-    b.eq exit             //if 4 in row exit
+    b.eq win             //if 4 in row exit
     b nextDiagRight       //check next position
     
 resetDiagRight:
@@ -168,7 +162,7 @@ scanDiagLeft:
     
     add x8, x8, #1         //increment counter
     cmp x8, #4             //check for win
-    b.eq exit             //if 4 in row exit
+    b.eq win             //if 4 in row exit
     b nextDiagLeft        //check next position
     
 resetDiagLeft:
@@ -207,7 +201,7 @@ scanRow:
     
     add x8, x8, #1         //increment counter
     cmp x8, #4             //check for win
-    b.eq exit             //if 4 in row exit
+    b.eq win             //if 4 in row exit
     b nextPos             //check next position
     
 resetCount:
@@ -219,8 +213,13 @@ nextPos:
     
 endLeft:
     mov x8, #0             //reset counter before returning
-    printReg 8
-    b checkPlayer
+    b showboard
+
+win:
+	bl printArray
+	ldr x4, =playerState
+    	ldr x0, playerState
+	bl printWin
 
 exit:
     mov x0, #0
