@@ -21,10 +21,24 @@ int32_t inputCol() {
 
 // function that prints array
 void printArray(int32_t* arr) {
+  for(int i = 0; i < 10; ++i) {
+    printf("\033[1A\033[2K");
+  }
         int counter = 0;
 for(int i = 0; i < 6; ++i) {
 for (int j = 0; j < 7; ++j) {
-printf ("%d ",arr[counter++]);
+switch(arr[counter]) {
+  case 0:
+    printf("- ");
+    break;
+  case 1:
+    printf("X ");
+    break;
+  case 2:
+    printf("O ");
+    break;
+}
+++counter;
 }
 printf("\n");
 }
@@ -37,4 +51,8 @@ void player1() {
 
 void player2() {
   printf("Player 2's turn\n");
+}
+
+void printWin(int32_t playerNum) {
+  printf("Player %d Wins!\n", playerNum);
 }
