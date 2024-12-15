@@ -1,0 +1,1 @@
+qemu-aarch64 -L ~/aarch64-root ./connect4
