@@ -101,11 +101,18 @@ endVertical:
 diagRightCheck:
     mov x20, x5            //store position
     mov x21, x6            //store player number
-    mov x8, #0             //reset consecutive counter
+    mov x10, #0             //reset consecutive counter
     
-scanDiagRight:
+scanDiagRightDown:
     cmp x20, #42           //check if past board bottom
-    b.ge endDiagRight      //if past bottom no win found
+    b.ge diagRightCheckUp      //if past bottom no win found
+    
+    ldrsw x24, [x19, x20, lsl#2]  //load value at position
+    
+    cmp x24, x21           //compare with player number
+    b.ne diagRightCheckUp    //if not match reset counter
+    
+    add x10, x10, #1         //increment counter
     
     //check if at right edge
     mov x24, #7            //divisor for column check
@@ -114,37 +121,63 @@ scanDiagRight:
     udiv x26, x25, x24     //divide by 7 to get next row
     udiv x27, x20, x24     //divide by 7 to get current row
     cmp x26, x27          //compare rows
-    b.ne endDiagRight     //if different rows stop checking
+    b.ne diagRightCheckUp     //if different rows stop checking
+    
+    b nextDiagRightDown       //check next position
+    
+nextDiagRightDown:
+    add x20, x20, #8       //move down-right (down 7 + right 1)
+    b scanDiagRightDown       //continue scan
+
+diagRightCheckUp:
+    mov x20, x5            //store position
+    
+scanDiagRightUp:
+    cmp x20, #0           //check if past board bottom
+    b.ls endDiagRight      //if past bottom no win found
     
     ldrsw x24, [x19, x20, lsl#2]  //load value at position
     
     cmp x24, x21           //compare with player number
-    b.ne resetDiagRight    //if not match reset counter
+    b.ne endDiagRight    //if not match reset counter
     
-    add x8, x8, #1         //increment counter
-    cmp x8, #4             //check for win
-    b.eq win             //if 4 in row exit
-    b nextDiagRight       //check next position
+    add x10, x10, #1         //increment counter
     
-resetDiagRight:
-    mov x8, #0             //reset counter
+    //check if at left edge
+    mov x24, #7            //divisor for column check
+    mov x25, x20           //copy position
+    sub x25, x25, #1       //look ahead one position
+    udiv x26, x25, x24     //divide by 7 to get next row
+    udiv x27, x20, x24     //divide by 7 to get current row
+    cmp x26, x27          //compare rows
+    b.ne endDiagRight     //if different rows stop checking
     
-nextDiagRight:
-    add x20, x20, #8       //move down-right (down 7 + right 1)
-    b scanDiagRight       //continue scan
+    b nextDiagRightUp       //check next position
+    
+nextDiagRightUp:
+    sub x20, x20, #8       //move up-left (up 7 + left 1)
+    b scanDiagRightUp       //continue scan
     
 endDiagRight:
-    mov x8, #0             //reset counter
+    cmp x10, #5             //check for win
+    b.eq win             //if 4 in row exit
     b diagLeftCheck       //check diagonal left next
 
 diagLeftCheck:
     mov x20, x5            //store position
     mov x21, x6            //store player number
-    mov x8, #0             //reset consecutive counter
+    mov x9, #0             //reset consecutive counter
     
-scanDiagLeft:
+scanDiagLeftDown:
     cmp x20, #42           //check if past board bottom
-    b.ge endDiagLeft       //if past bottom no win found
+    b.ge diagLeftCheckUp       //if past bottom no win found
+    
+    ldrsw x24, [x19, x20, lsl#2]  //load value at position
+    
+    cmp x24, x21           //compare with player number
+    b.ne diagLeftCheckUp     //if not match reset counter
+    
+    add x9, x9, #1         //increment counter
     
     //check if at left edge
     mov x24, #7            //divisor for column check
@@ -153,27 +186,46 @@ scanDiagLeft:
     udiv x26, x25, x24     //divide by 7 to get prev row
     udiv x27, x20, x24     //divide by 7 to get current row
     cmp x26, x27          //compare rows
-    b.ne endDiagLeft      //if different rows stop checking
+    b.ne diagLeftCheckUp      //if different rows stop checking
+    
+    b nextDiagLeftDown        //check next position
+    
+nextDiagLeftDown:
+    add x20, x20, #6       //move down-left (down 7 - left 1)
+    b scanDiagLeftDown        //continue scan
+
+diagLeftCheckUp:
+    mov x20, x5            //store position
+
+scanDiagLeftUp:
+    cmp x20, #0           //check if past board top
+    b.lt endDiagLeft       //if past top no win found
     
     ldrsw x24, [x19, x20, lsl#2]  //load value at position
     
     cmp x24, x21           //compare with player number
-    b.ne resetDiagLeft     //if not match reset counter
+    b.ne endDiagLeft     //if not match reset counter
     
-    add x8, x8, #1         //increment counter
-    cmp x8, #4             //check for win
-    b.eq win             //if 4 in row exit
-    b nextDiagLeft        //check next position
+    add x9, x9, #1         //increment counter
     
-resetDiagLeft:
-    mov x8, #0             //reset counter
+    //check if at right edge
+    mov x24, #7            //divisor for column check
+    mov x25, x20           //copy position
+    add x25, x25, #1       //look ahead one position
+    udiv x26, x25, x24     //divide by 7 to get next row
+    udiv x27, x20, x24     //divide by 7 to get current row
+    cmp x26, x27          //compare rows
+    b.ne endDiagLeft     //if different rows stop checking
     
-nextDiagLeft:
-    add x20, x20, #6       //move down-left (down 7 - left 1)
-    b scanDiagLeft        //continue scan
+    b nextDiagLeftUp        //check next position
+    
+nextDiagLeftUp:
+    sub x20, x20, #6       //move up-right (up 7 + right 1)
+    b scanDiagLeftUp        //continue scan
     
 endDiagLeft:
-    mov x8, #0             //reset counter
+    cmp x9, #5             //check for win
+    b.eq win             //if 4 in row exit
     b horiCheck           //check horizontal next
     
 horiCheck:
@@ -220,6 +272,26 @@ win:
 	ldr x4, =playerState
     	ldr x0, playerState
 	bl printWin
+	bl playAgain
+	cmp x0, #0
+	b.ne exit
+	
+	ldr x19, =arr
+	mov x5, #42
+	mov x6, #0	//index
+	mov x7, #0
+	
+loop:
+	str w7, [x19, x6, lsl#2]
+	add x6, x6, #1
+	cmp x5, x6
+	b.ne loop
+	
+	ldr x4, =playerState	//reset playstate
+	mov x3, #2
+	str x3, [x4]
+	
+	b showboard
 
 exit:
     mov x0, #0

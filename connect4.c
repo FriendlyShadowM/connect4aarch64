@@ -21,7 +21,7 @@ int32_t inputCol() {
 
 // function that prints array
 void printArray(int32_t* arr) {
-  for(int i = 0; i < 10; ++i) {
+  for(int i = 0; i < 15; ++i) {
     printf("\033[1A\033[2K");
   }
         int counter = 0;
@@ -55,4 +55,15 @@ void player2() {
 
 void printWin(int32_t playerNum) {
   printf("Player %d Wins!\n", playerNum);
+}
+
+char playAgain() {
+  printf("Play again Y/N?\n");
+  int32_t num;
+  char input;
+  scanf (" %c", &input);
+  input = toupper(input);
+  num = input - '0';
+  num -= 41;
+  return num;
 }
